@@ -62,6 +62,10 @@ func nextFuture(delay time.Duration, timeout time.Duration, num int, nextDelay t
 	})
 	fmt.Println("Next Future is", newFuture.GetState())
 	fmt.Println("Future is", f.GetState())
+	f.Result() // wait for first future to finish
+	fmt.Println("Future is", f.GetState())
+	newFuture.Result() // wait for newFuture to finish
+	fmt.Println("Next Future is", newFuture.GetState())
 }
 
 // this function just prints the future output and error(if any)
