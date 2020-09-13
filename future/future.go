@@ -68,7 +68,7 @@ func (f *future) GetState() string {
 	}
 }
 
-//gets result of future if it is already done or cancelled. non-blocking
+// gives the value of handler and the error
 func (f *future) Result() (interface{}, error) {
 	select {
 	case <-f.done:
@@ -76,7 +76,6 @@ func (f *future) Result() (interface{}, error) {
 	case <-f.cancelChan:
 		return f.val, f.err
 	}
-	return nil, nil
 }
 
 // adds a next future to execute on completion of current future

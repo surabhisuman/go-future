@@ -60,7 +60,6 @@ func nextFuture(delay time.Duration, timeout time.Duration, num int, nextDelay t
 	newFuture := f.AddDoneCallback(nextTimeout, func(interface{}) (interface{}, error) {
 		return findFibonacci(nextDelay, nextNum)
 	})
-	fmt.Println("Future is", f.GetState())
 	fmt.Println("Next Future is", newFuture.GetState())
 	fmt.Println("Future is", f.GetState())
 }
@@ -79,9 +78,10 @@ func main() {
 	num := 5
 	time1 := 1 * time.Second
 	time2 := 5 * time.Second
+	time3 := 2 * time.Second
 	timeoutFuture(time1, time2, num)             // delay in calculating handler is less than timeout. So, it should give proper result
 	timeoutFuture(time2, time1, num)             // delay in calculating handler is greater than timeout. So, result should give timeout error
 	timeoutFuture(time1, time2, -1)              // should throw custom error
-	cancelFuture(time1, time2, 2)                // future is cancelled, throws custom error
-	nextFuture(time1, time2, 2, time1, time2, 5) // future is created and a callback future is attached to it
+	cancelFuture(time1, time2, num)              // future is cancelled, throws custom error
+	nextFuture(time3, time2, 2, time1, time2, 5) // future is created and a callback future is attached to it
 }
