@@ -3,7 +3,6 @@ package future
 import (
 	"context"
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 )
@@ -33,9 +32,9 @@ func (f *future) Cancel() {
 	case <-f.cancelChan:
 		return //already cancelled
 	default:
-		f.mutex.Lock()
+		// f.mutex.Lock()
 		f.err = errors.New("cancelled by user")
-		f.mutex.Unlock()
+		// f.mutex.Unlock()
 		f.cancelFunc()
 	}
 }
@@ -118,9 +117,9 @@ func createFutureWithContext(timeout time.Duration, cancelChan <-chan struct{}, 
 		if timeout.Milliseconds() == 0 {
 			return
 		}
-		fmt.Println(time.Now())
+		// fmt.Println(time.Now())
 		<-time.After(timeout)
-		fmt.Println(time.Now())
+		// fmt.Println(time.Now())
 		f.Cancel()
 		if f.Cancelled() {
 			f.mutex.Lock()
@@ -130,7 +129,8 @@ func createFutureWithContext(timeout time.Duration, cancelChan <-chan struct{}, 
 	}()
 	go func() {
 		val, err := handler()
-		if f.Isdone() {
+		// fmt.Println(f.GetState())
+		if !f.Cancelled() {
 			f.mutex.Lock()
 			f.val, f.err = val, err
 			f.mutex.Unlock()

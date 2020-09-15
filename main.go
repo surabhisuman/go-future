@@ -83,7 +83,7 @@ func main() {
 	time1 := 1 * time.Second
 	time2 := 5 * time.Second
 	time3 := 2 * time.Second
-	timeoutFuture(time1, time2, num)             // delay in calculating handler is less than timeout. So, it should give proper result
+	timeoutFuture(time1, time1, num)             // delay in calculating handler is less than timeout. So, it should give proper result
 	timeoutFuture(time2, time1, num)             // delay in calculating handler is greater than timeout. So, result should give timeout error
 	timeoutFuture(time1, time2, -1)              // should throw custom error
 	cancelFuture(time1, time2, num)              // future is cancelled, throws custom error
