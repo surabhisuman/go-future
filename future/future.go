@@ -3,6 +3,8 @@ package future
 import (
 	"context"
 	"errors"
+	"fmt"
+	"sync"
 	"time"
 )
 
@@ -12,6 +14,7 @@ type future struct {
 	cancelFunc context.CancelFunc
 	val        interface{}
 	err        error
+	mutex      sync.Mutex
 }
 
 func (f *future) Cancelled() bool {
@@ -30,7 +33,9 @@ func (f *future) Cancel() {
 	case <-f.cancelChan:
 		return //already cancelled
 	default:
+		f.mutex.Lock()
 		f.err = errors.New("cancelled by user")
+		f.mutex.Unlock()
 		f.cancelFunc()
 	}
 }
@@ -109,26 +114,28 @@ func createFutureWithContext(timeout time.Duration, cancelChan <-chan struct{}, 
 		cancelChan: cancelChan,
 		cancelFunc: cancelFunc,
 	}
-	// fmt.Println(timeout)
 	go func() {
-		go func() {
-			if timeout.Milliseconds() == 0 {
-				return
-			}
-			<-time.After(timeout)
-			f.err = errors.New("future timedout")
-			f.cancelFunc()
-		}()
-		go func() {
-			f.val, f.err = handler()
-			close(f.done)
-		}()
-		select {
-		case <-f.done:
-			//do nothing
-		case <-f.cancelChan:
-			//do nothing, val = nil and err = nil
+		if timeout.Milliseconds() == 0 {
+			return
 		}
+		fmt.Println(time.Now())
+		<-time.After(timeout)
+		fmt.Println(time.Now())
+		f.Cancel()
+		if f.Cancelled() {
+			f.mutex.Lock()
+			f.err = errors.New("future timed out")
+			f.mutex.Unlock()
+		}
+	}()
+	go func() {
+		val, err := handler()
+		if f.Isdone() {
+			f.mutex.Lock()
+			f.val, f.err = val, err
+			f.mutex.Unlock()
+		}
+		close(f.done)
 	}()
 	return &f
 }
